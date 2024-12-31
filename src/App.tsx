@@ -1,4 +1,5 @@
 import { useState, ChangeEvent } from 'react';
+import { RiMenuUnfold4Line, RiMenuFoldLine } from "react-icons/ri";
 
 const chats = {
   Constructora: [
@@ -62,6 +63,7 @@ type ChatKey = keyof typeof chats;
 function App() {
   const [selectedChat, setSelectedChat] = useState<ChatKey>('Constructora');
   const [query, setQuery] = useState<string>('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   const filteredContacts = Object.keys(chats).filter((contact) =>
     contact.toLowerCase().includes(query.toLowerCase())
@@ -72,10 +74,12 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen">
-      <div className="w-1/3 bg-gray-950 text-white p-4 border-r border-gray-700">
-        <h2 className="text-2xl font-bold mb-4">Chats</h2>
-
+    <div className="flex h-screen relative">
+      <div className={`fixed inset-0 bg-gray-950 text-white p-4 border-r border-gray-700 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:w-1/3 z-10`}>
+        <div className='flex justify-between items-center text-2xl mb-4'>
+          <h2 className="text-2xl font-bold">Chats</h2>
+          <RiMenuFoldLine className="text-gray-100 cursor-pointer md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+        </div>
         <div>
           <input
             type="text"
@@ -103,22 +107,30 @@ function App() {
         </div>
       </div>
 
-      <div className="w-2/3 bg-gray-300 flex flex-col h-screen">
-        <div className="p-4 border-b border-gray-400">
+      {!isSidebarOpen && (
+        <RiMenuUnfold4Line
+          className="text-gray-900 cursor-pointer absolute top-4 right-4 z-20 text-2xl md:hidden"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+      )}
+
+      <div className={`flex-grow flex flex-col h-screen ${isSidebarOpen ? 'w-full' : 'w-full md:w-2/3'}`} style={{ background: 'linear-gradient(to bottom, #d3d3d3, #00008b)' }}>
+        <div className="p-4 border-b border-gray-400 bg-gray-300 bg-opacity-75 flex justify-between items-center">
           <h2 className="text-xl font-bold">{selectedChat}</h2>
         </div>
 
-        <div className="flex-grow p-4 overflow-y-auto">
+        <div className="flex-grow p-4 overflow-y-auto bg-gray-300 bg-opacity-75">
           <div className="space-y-4">
             {chats[selectedChat].map((message, index) => (
               <div
                 key={index}
-                className={`p-4 rounded-xl max-w-md ${message.sender === 'Yo' ? 'bg-blue-500 text-white self-end ml-auto' : 'bg-gray-200 text-black self-start mr-auto'}`}
-                style={{ textAlign: message.sender === 'Yo' ? 'right' : 'left' }}
+                className={`p-4 rounded-xl max-w-[80%] ${message.sender === 'Yo' ? 'bg-gray-900 text-white self-end ml-auto' : 'bg-gray-200 text-black self-start mr-auto'}`}
+                style={{ textAlign: 'left', position: 'relative' }}
               >
-                <div className="font-semibold">{message.sender}</div>
                 <div>{message.text}</div>
-                <div className="text-sm text-gray-500">{message.time}</div>
+                <div className="text-xs text-gray-400" style={{ position: 'absolute', bottom: '4px', right: '8px' }}>
+                  {message.time}
+                </div>
               </div>
             ))}
           </div>
